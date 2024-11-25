@@ -1,49 +1,89 @@
 import { useState } from "preact/hooks";
-import preactLogo from "./assets/preact.svg";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+const AVAILABLE_MODELS = [
+  { id: "qwen2.5:14b", name: "Qwen 2.5 (14B)" },
+  { id: "llama3.2:3b", name: "Llama 3.2 (3B)" },
+  { id: "qwen2.5:32b", name: "Qwen 2.5 (32B)" },
+  { id: "qwen:7b", name: "Qwen (7B)" },
+  { id: "phi3:medium", name: "Phi-3 Medium" },
+  { id: "llama3.1:8b", name: "Llama 3.1 (8B)" },
+  { id: "qwen2.5:7b", name: "Qwen 2.5 (7B)" },
+  { id: "llama3.2:1b", name: "Llama 3.2 (1B)" },
+];
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+function App() {
+  const [input, setInput] = useState("");
+  const [result, setResult] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState(AVAILABLE_MODELS[0].id);
+
+  async function chatOnce() {
+    if (!input.trim()) {
+      setError("Please enter a message");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await invoke("chat_once", {
+        model: selectedModel,
+        input: input.trim(),
+      });
+      setResult(response as string);
+    } catch (error) {
+      console.error("Error:", error);
+      setError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
-    <main class="container">
-      <h1>Welcome to Tauri + Preact</h1>
-
-      <div class="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://preactjs.com" target="_blank">
-          <img src={preactLogo} class="logo preact" alt="Preact logo" />
-        </a>
+    <main>
+      <h1>Chat with AI</h1>
+      <div className="model-selector">
+        <label htmlFor="model-select">Select Model:</label>
+        <select
+          id="model-select"
+          value={selectedModel}
+          onChange={(e) => setSelectedModel(e.currentTarget.value)}
+          disabled={isLoading}
+        >
+          {AVAILABLE_MODELS.map((model) => (
+            <option key={model.id} value={model.id}>
+              {model.name}
+            </option>
+          ))}
+        </select>
       </div>
-      <p>Click on the Tauri, Vite, and Preact logos to learn more.</p>
-
-      <form
-        class="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onInput={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
+      <div className="chat-container">
+        <textarea
+          value={input}
+          onInput={(e) => setInput((e.target as HTMLTextAreaElement).value)}
+          placeholder="Type your message here..."
+          disabled={isLoading}
         />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
+        <button 
+          onClick={chatOnce} 
+          disabled={isLoading || !input.trim()}
+        >
+          {isLoading ? "Sending..." : "Send"}
+        </button>
+      </div>
+      {error && (
+        <div className="error-container">
+          <p className="error">{error}</p>
+        </div>
+      )}
+      <div className="response-container">
+        <h2>Response:</h2>
+        <p>{result || "No response yet."}</p>
+      </div>
     </main>
   );
 }
