@@ -3,6 +3,8 @@ use serde::Deserialize;
 use serde_json::json;
 use reqwest;
 
+mod constant;
+
 #[derive(Deserialize, Debug)]
 struct OllamaResponse {
     message: OllamaMessage,
@@ -16,10 +18,10 @@ struct OllamaMessage {
 #[tauri::command]
 async fn chat_once(model: &str, input: &str) -> Result<String, String> {
     let client = reqwest::Client::new();
-    
+
     let api_url = env::var("OLLAMA_API_URL")
-        .unwrap_or_else(|_| "http://172.26.240.1:11434/api/chat".to_string());
-    
+        .unwrap_or_else(|_| format!("{}/api/chat", constant::OLLAMA_API_URL).to_string());
+
     let payload = json!({
         "model": model,
         "messages": [{
@@ -41,8 +43,7 @@ async fn chat_once(model: &str, input: &str) -> Result<String, String> {
 
     let mut full_response = String::new();
     let text = res.text().await.map_err(|e| format!("Failed to get response text: {}", e))?;
-    
-    // 处理流式响应
+
     for line in text.lines() {
         if let Ok(response) = serde_json::from_str::<OllamaResponse>(line) {
             full_response.push_str(&response.message.content);
