@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "limmer",
+        "title": "Limmer",
         "width": 800,
         "height": 600
       }
