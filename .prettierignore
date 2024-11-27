@@ -1,0 +1,5 @@
+.husky
+dist/
+node_modules/
+public/
+src-tauri/target/

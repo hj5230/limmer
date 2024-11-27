@@ -4,6 +4,11 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "postinstall": "husky",
+    "format": "prettier --write .",
+    "lint": "eslint 'src/**/*.{ts,tsx}' --fix",
+    "check:type": "tsc --noEmit",
+    "check:deps": "bun install -y",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
@@ -20,8 +25,17 @@
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.5.0",
-    "typescript": "^5.2.2",
-    "vite": "^5.3.1",
-    "@tauri-apps/cli": "^2"
+    "@tauri-apps/cli": "^2",
+    "@typescript-eslint/eslint-plugin": "^8.16.0",
+    "@typescript-eslint/parser": "^8.16.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "globals": "^15.12.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.4.1",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.16.0",
+    "vite": "^5.3.1"
   }
 }
