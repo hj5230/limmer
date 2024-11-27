@@ -1,6 +1,7 @@
 export enum Page {
   CHAT = 'chat',
   COMPLETION = 'completion',
+  Playground = 'playground',
 }
 
 export const AVAILABLE_MODELS = [
