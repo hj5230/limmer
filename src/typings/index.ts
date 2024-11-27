@@ -14,3 +14,5 @@ export const AVAILABLE_MODELS = [
   { id: 'qwen2.5:7b', name: 'Qwen 2.5 (7B)' },
   { id: 'llama3.2:1b', name: 'Llama 3.2 (1B)' },
 ]
+
+export type Mode = 'chat' | 'completion'

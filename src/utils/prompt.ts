@@ -8,10 +8,10 @@ type VariableMap<T extends string> = {
 }
 
 /**
- * 构建 prompt 字符串
- * @param template 包含变量占位符的模板字符串
- * @param variables 变量值映射对象
- * @throws {PromptError} 当变量不匹配时抛出错误
+ * Construct a prompt from a template string and a variable map.
+ * @param template template string contains placeholders
+ * @param variables variable map
+ * @throws {Error} throw error when placeholders and variables don't exactly match
  */
 export function buildPrompt<T extends string>(
   template: T,
