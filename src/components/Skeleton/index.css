@@ -1,0 +1,16 @@
+main {
+  display: flex;
+  box-sizing: border-box;
+  height: 100dvh;
+  padding: 0.5rem;
+  background-color: #F0EEE5;
+}
+
+.border {
+  flex: 1;
+  padding: 0.5rem;
+  border-width: 0.1rem;
+  border-style: solid;
+  border-color: #a3a3a3;
+  border-radius: 0.5rem;
+}
