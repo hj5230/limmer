@@ -1,2 +1,2 @@
-export { Skeleton } from './Skeleton'
-export { ModelSelector } from './ModelSelector'
+export { Skeleton } from '@/components/Skeleton'
+export { ModelSelector } from '@/components/ModelSelector'

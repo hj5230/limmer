@@ -1,14 +1,14 @@
-import { FC, JSX } from 'preact/compat'
+import { JSX } from 'preact/compat'
 import { ScrollArea, Theme } from '@radix-ui/themes'
-import './index.css'
+import '@/components/Skeleton/index.css'
 
 interface SkeletonProps {
   children?: React.ReactNode
 }
 
-export const Skeleton: FC<SkeletonProps> = ({
+export function Skeleton({
   children,
-}): JSX.Element => {
+}: SkeletonProps): JSX.Element {
   return (
     <Theme>
       <main>

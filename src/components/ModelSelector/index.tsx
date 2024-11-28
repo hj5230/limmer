@@ -1,4 +1,4 @@
-import { AVAILABLE_MODELS } from '../../typings'
+import { AVAILABLE_MODELS } from '@/typings'
 import { Select } from '@radix-ui/themes'
 
 export function ModelSelector({
