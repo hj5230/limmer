@@ -1,4 +1,4 @@
-import { JSX } from 'preact/compat'
+import { JSX, memo } from 'preact/compat'
 import { ScrollArea, Theme } from '@radix-ui/themes'
 import '@/components/Skeleton/index.css'
 
@@ -6,7 +6,7 @@ interface SkeletonProps {
   children?: React.ReactNode
 }
 
-export function Skeleton({
+function Skeleton({
   children,
 }: SkeletonProps): JSX.Element {
   return (
@@ -19,3 +19,5 @@ export function Skeleton({
     </Theme>
   )
 }
+
+export default memo(Skeleton)

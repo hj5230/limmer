@@ -1,7 +1,8 @@
 import { AVAILABLE_MODELS } from '@/typings'
 import { Select } from '@radix-ui/themes'
+import { memo } from 'preact/compat'
 
-export function ModelSelector({
+function ModelSelector({
   selectedModel,
   setSelectedModel,
   isLoading,
@@ -27,3 +28,5 @@ export function ModelSelector({
     </Select.Root>
   )
 }
+
+export default memo(ModelSelector)

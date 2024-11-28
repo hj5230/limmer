@@ -1,15 +1,24 @@
-import { useState } from 'preact/hooks'
-import { JSX } from 'preact/compat'
+import {
+  useState,
+  useCallback,
+  useMemo,
+} from 'preact/hooks'
+import { JSX, memo } from 'preact/compat'
 import { AVAILABLE_MODELS, Mode } from '@/typings'
 import { useAIInteraction } from '@/hooks'
-import { Skeleton, ModelSelector } from '@/components'
+import {
+  Skeleton,
+  ModelSelector,
+  Message,
+  Dialog,
+  SuggestBtn,
+} from '@/components'
 import {
   Button,
   TextArea,
   Card,
   Heading,
   Text,
-  AlertDialog,
   Flex,
   Box,
   Tabs,
@@ -34,47 +43,89 @@ function App() {
     getAIResponse,
   } = useAIInteraction({ selectedModel, mode })
 
-  const handleTextareaChange = (
-    e: JSX.TargetedEvent<HTMLTextAreaElement, Event>,
-  ) => {
-    const newInput = e.currentTarget.value
-    setInput(newInput)
+  // 使用 useCallback 缓存所有回调函数
+  const handleTextareaChange = useCallback(
+    (e: JSX.TargetedEvent<HTMLTextAreaElement, Event>) => {
+      const newInput = e.currentTarget.value
+      setInput(newInput)
 
-    if (mode === 'completion') {
-      // For completion mode, fetch suggestion after a timeout
-      if (newInput.endsWith(' ')) {
+      if (mode === 'completion' && newInput.endsWith(' ')) {
         getAIResponse(newInput)
       }
-    }
-  }
+    },
+    [mode, getAIResponse, setInput],
+  )
 
-  const handleSend = () => {
+  const handleSend = useCallback(() => {
     if (mode === 'chat') {
       getAIResponse(input)
     }
-  }
+  }, [mode, getAIResponse, input])
 
-  const acceptSuggestion = () => {
+  const acceptSuggestion = useCallback(() => {
     if (suggestion) {
       setInput(prev => prev + suggestion + ' ')
       setSuggestion('')
     }
-  }
+  }, [suggestion, setSuggestion])
+
+  const handleClose = useCallback(() => {
+    setResponse('')
+  }, [])
+
+  const handleModeChange = useCallback((value: Mode) => {
+    setMode(value)
+  }, [])
+
+  const handleModelChange = useCallback((model: string) => {
+    setSelectedModel(model)
+  }, [])
+
+  const textAreaStyle = useMemo(
+    () => ({
+      fontFamily: 'monospace',
+      height: '40vh',
+    }),
+    [],
+  )
+
+  const suggestionStyle = useMemo(
+    () => ({
+      position: 'absolute' as const,
+      bottom: '8px',
+      left: input.length * 8 + 16,
+      color: 'gray',
+      pointerEvents: 'none' as const,
+      fontFamily: 'monospace',
+    }),
+    [input.length],
+  )
+
+  const containerStyle = useMemo(
+    () => ({
+      maxWidth: '800px',
+      margin: '0 auto',
+    }),
+    [],
+  )
+
+  const statusText = useMemo(() => {
+    if (isLoading) return 'Thinking...'
+    if (suggestion) return 'Suggestion available'
+    return 'Ready'
+  }, [isLoading, suggestion])
 
   return (
     <Theme>
       <Skeleton>
-        <Box
-          p="6"
-          style={{ maxWidth: '800px', margin: '0 auto' }}
-        >
+        <Box p="6" style={containerStyle}>
           <Heading size="8" mb="4">
             AI Interaction
           </Heading>
 
           <Tabs.Root
             value={mode}
-            onValueChange={(value: Mode) => setMode(value)}
+            onValueChange={handleModeChange}
           >
             <Tabs.List>
               <Tabs.Trigger value="chat">Chat</Tabs.Trigger>
@@ -84,12 +135,10 @@ function App() {
             </Tabs.List>
 
             <Tabs.Content value="chat">
-              {/* Chat Mode */}
               <Flex direction="column" gap="4">
-                {/* Shared Components */}
                 <ModelSelector
                   selectedModel={selectedModel}
-                  setSelectedModel={setSelectedModel}
+                  setSelectedModel={handleModelChange}
                   isLoading={isLoading}
                 />
 
@@ -109,37 +158,14 @@ function App() {
                   {isLoading ? 'Sending...' : 'Send'}
                 </Button>
 
-                {error && (
-                  <Flex gap="2" align="center">
-                    <Text color="red">{error}</Text>
-                  </Flex>
-                )}
+                {error && <Message error={error} />}
 
-                {response && (
-                  <AlertDialog.Root open={!!response}>
-                    <AlertDialog.Content>
-                      <AlertDialog.Title>
-                        Response
-                      </AlertDialog.Title>
-                      <AlertDialog.Description>
-                        {response}
-                      </AlertDialog.Description>
-                      <Flex gap="3" mt="4" justify="end">
-                        <AlertDialog.Cancel>
-                          <Button
-                            variant="soft"
-                            color="gray"
-                            onClick={() => setResponse('')}
-                          >
-                            Close
-                          </Button>
-                        </AlertDialog.Cancel>
-                      </Flex>
-                    </AlertDialog.Content>
-                  </AlertDialog.Root>
-                )}
-
-                {!response && (
+                {response ? (
+                  <Dialog
+                    response={response}
+                    onClose={handleClose}
+                  />
+                ) : (
                   <Card>
                     <Heading size="4" mb="2">
                       Response:
@@ -153,12 +179,10 @@ function App() {
             </Tabs.Content>
 
             <Tabs.Content value="completion">
-              {/* Completion Mode */}
               <Flex direction="column" gap="4">
-                {/* Shared Components */}
                 <ModelSelector
                   selectedModel={selectedModel}
-                  setSelectedModel={setSelectedModel}
+                  setSelectedModel={handleModelChange}
                   isLoading={isLoading}
                 />
 
@@ -169,54 +193,29 @@ function App() {
                     value={input}
                     onChange={handleTextareaChange}
                     disabled={isLoading}
-                    style={{
-                      fontFamily: 'monospace',
-                      height: '40vh',
-                    }}
+                    style={textAreaStyle}
                   />
                   {suggestion && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: '8px',
-                        left: input.length * 8 + 16, // Approximate position
-                        color: 'gray',
-                        pointerEvents: 'none',
-                        fontFamily: 'monospace',
-                      }}
-                    >
+                    <div style={suggestionStyle}>
                       {suggestion}
                     </div>
                   )}
                 </div>
 
                 {suggestion && (
-                  <Button
-                    size="2"
-                    variant="soft"
-                    onClick={acceptSuggestion}
-                  >
-                    Accept Suggestion (Tab)
-                  </Button>
+                  <SuggestBtn
+                    suggestion={suggestion}
+                    onAccept={acceptSuggestion}
+                  />
                 )}
 
-                {error && (
-                  <Flex gap="2" align="center">
-                    <Text color="red">{error}</Text>
-                  </Flex>
-                )}
+                {error && <Message error={error} />}
 
                 <Card>
                   <Heading size="4" mb="2">
                     Status:
                   </Heading>
-                  <Text color="gray">
-                    {isLoading
-                      ? 'Thinking...'
-                      : suggestion
-                        ? 'Suggestion available'
-                        : 'Ready'}
-                  </Text>
+                  <Text color="gray">{statusText}</Text>
                 </Card>
               </Flex>
             </Tabs.Content>
@@ -227,4 +226,4 @@ function App() {
   )
 }
 
-export default App
+export default memo(App)

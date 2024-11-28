@@ -1,2 +1,5 @@
-export { Skeleton } from '@/components/Skeleton'
-export { ModelSelector } from '@/components/ModelSelector'
+export { default as Skeleton } from '@/components/Skeleton'
+export { default as ModelSelector } from '@/components/ModelSelector'
+export { default as Dialog } from '@/components/Dialog'
+export { default as Message } from '@/components/Message'
+export { default as SuggestBtn } from '@/components/SuggestBtn'
