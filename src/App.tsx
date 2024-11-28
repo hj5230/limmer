@@ -2,9 +2,14 @@ import {
   useState,
   useCallback,
   useMemo,
+  useEffect,
 } from 'preact/hooks'
 import { JSX, memo } from 'preact/compat'
-import { AVAILABLE_MODELS, Mode } from '@/typings'
+import {
+  AVAILABLE_MODELS,
+  ModeType,
+  ModeEnum,
+} from '@/typings'
 import { useAIInteraction } from '@/hooks'
 import {
   Skeleton,
@@ -26,7 +31,9 @@ import {
 } from '@radix-ui/themes'
 
 function App() {
-  const [mode, setMode] = useState<Mode>('chat')
+  const [mode, setMode] = useState<ModeType>(
+    ModeEnum.COMPLETION,
+  )
   const [selectedModel, setSelectedModel] = useState(
     AVAILABLE_MODELS[0].id,
   )
@@ -43,13 +50,15 @@ function App() {
     getAIResponse,
   } = useAIInteraction({ selectedModel, mode })
 
-  // 使用 useCallback 缓存所有回调函数
   const handleTextareaChange = useCallback(
     (e: JSX.TargetedEvent<HTMLTextAreaElement, Event>) => {
       const newInput = e.currentTarget.value
       setInput(newInput)
 
-      if (mode === 'completion' && newInput.endsWith(' ')) {
+      if (
+        mode === ModeEnum.COMPLETION &&
+        newInput.endsWith(' ')
+      ) {
         getAIResponse(newInput)
       }
     },
@@ -57,7 +66,7 @@ function App() {
   )
 
   const handleSend = useCallback(() => {
-    if (mode === 'chat') {
+    if (mode === ModeEnum.CHAT) {
       getAIResponse(input)
     }
   }, [mode, getAIResponse, input])
@@ -73,9 +82,14 @@ function App() {
     setResponse('')
   }, [])
 
-  const handleModeChange = useCallback((value: Mode) => {
-    setMode(value)
-  }, [])
+  const handleModeChange = useCallback(
+    (value: ModeType) => {
+      setInput('')
+      setSuggestion('')
+      setMode(value)
+    },
+    [],
+  )
 
   const handleModelChange = useCallback((model: string) => {
     setSelectedModel(model)
@@ -114,6 +128,21 @@ function App() {
     if (suggestion) return 'Suggestion available'
     return 'Ready'
   }, [isLoading, suggestion])
+
+  useEffect(() => {
+    const handleTabPress = (event: KeyboardEvent) => {
+      if (event.key === 'Tab' && suggestion) {
+        event.preventDefault()
+        acceptSuggestion()
+      }
+    }
+
+    window.addEventListener('keydown', handleTabPress)
+
+    return () => {
+      window.removeEventListener('keydown', handleTabPress)
+    }
+  }, [suggestion])
 
   return (
     <Theme>
