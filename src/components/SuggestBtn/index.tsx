@@ -6,10 +6,13 @@ interface SuggestBtnProps {
   onAccept: () => void
 }
 
-function SuggestBtn({ onAccept }: SuggestBtnProps) {
+function SuggestBtn({
+  suggestion,
+  onAccept,
+}: SuggestBtnProps) {
   return (
     <Button size="2" variant="soft" onClick={onAccept}>
-      Accept Suggestion (Tab)
+      {suggestion} (Tab)
     </Button>
   )
 }

@@ -142,7 +142,7 @@ function App() {
     return () => {
       window.removeEventListener('keydown', handleTabPress)
     }
-  }, [suggestion])
+  }, [suggestion, acceptSuggestion])
 
   return (
     <Theme>
@@ -176,12 +176,11 @@ function App() {
                   placeholder="Type your message here..."
                   value={input}
                   onChange={handleTextareaChange}
-                  disabled={isLoading}
                 />
 
                 <Button
                   size="3"
-                  disabled={isLoading || !input.trim()}
+                  disabled={!input.trim()}
                   onClick={handleSend}
                 >
                   {isLoading ? 'Sending...' : 'Send'}
@@ -221,7 +220,6 @@ function App() {
                     placeholder="Start typing..."
                     value={input}
                     onChange={handleTextareaChange}
-                    disabled={isLoading}
                     style={textAreaStyle}
                   />
                   {suggestion && (

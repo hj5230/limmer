@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { useState } from 'preact/hooks'
+import { useState, useRef } from 'preact/hooks'
 import { buildPrompt } from '@/utils'
 import { ModeType, ModeEnum } from '@/typings'
 
@@ -18,7 +18,9 @@ export function useAIInteraction({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const getAIResponse = async (text: string) => {
+  const requestIdRef = useRef<number>(0)
+
+  const getAIResponse = (text: string) => {
     if (!text.trim()) {
       setSuggestion('')
       setResponse('')
@@ -28,33 +30,44 @@ export function useAIInteraction({
     setIsLoading(true)
     setError(null)
 
-    try {
-      const prompt =
-        mode === ModeEnum.COMPLETION
-          ? buildPrompt(
-              'Given the partial text: "{{text}}", provide next word (response with the word only)',
-              { text },
-            )
-          : text.trim()
+    const currentRequestId = ++requestIdRef.current
 
-      const result = await invoke('chat_once', {
-        model: selectedModel,
-        input: prompt,
+    const prompt =
+      mode === ModeEnum.COMPLETION
+        ? buildPrompt(
+            'Given the partial text: "{{text}}", provide next word (response with the word only)',
+            { text },
+          )
+        : text.trim()
+
+    invoke('chat_once', {
+      model: selectedModel,
+      input: prompt,
+    })
+      .then(result => {
+        if (currentRequestId === requestIdRef.current) {
+          if (mode === ModeEnum.COMPLETION) {
+            setSuggestion(result as string)
+          } else {
+            setResponse(result as string)
+          }
+        }
       })
-
-      if (mode === ModeEnum.COMPLETION) {
-        setSuggestion(result as string)
-      } else {
-        setResponse(result as string)
-      }
-    } catch (err) {
-      console.error('Error:', err)
-      setError(
-        err instanceof Error ? err.message : String(err),
-      )
-    } finally {
-      setIsLoading(false)
-    }
+      .catch(err => {
+        if (currentRequestId === requestIdRef.current) {
+          console.error('Error:', err)
+          setError(
+            err instanceof Error
+              ? err.message
+              : String(err),
+          )
+        }
+      })
+      .finally(() => {
+        if (currentRequestId === requestIdRef.current) {
+          setIsLoading(false)
+        }
+      })
   }
 
   return {
