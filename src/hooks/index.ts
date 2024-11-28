@@ -1,10 +1,11 @@
 import { invoke } from '@tauri-apps/api/core'
 import { useState } from 'preact/hooks'
-import { buildPrompt } from '../utils'
+import { buildPrompt } from '@/utils'
+import { Mode } from '@/typings'
 
 interface UseAIInteractionProps {
   selectedModel: string
-  mode: 'chat' | 'completion'
+  mode: Mode
 }
 
 export function useAIInteraction({

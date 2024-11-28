@@ -1,1 +1,1 @@
-export { buildPrompt } from './prompt'
+export { buildPrompt } from '@/utils/prompt'

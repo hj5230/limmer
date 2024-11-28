@@ -1,8 +1,8 @@
 import { useState } from 'preact/hooks'
 import { JSX } from 'preact/compat'
-import { AVAILABLE_MODELS, Mode } from './typings'
-import { useAIInteraction } from './hooks'
-import { Skeleton, ModelSelector } from './components'
+import { AVAILABLE_MODELS, Mode } from '@/typings'
+import { useAIInteraction } from '@/hooks'
+import { Skeleton, ModelSelector } from '@/components'
 import {
   Button,
   TextArea,
