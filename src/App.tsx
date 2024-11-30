@@ -82,14 +82,15 @@ function App() {
     setResponse('')
   }, [])
 
-  const handleModeChange = useCallback(
-    (value: ModeType) => {
-      setInput('')
-      setSuggestion('')
-      setMode(value)
-    },
-    [],
-  )
+  const handleSwitchMode = useCallback(() => {
+    setInput('')
+    setSuggestion('')
+    setMode(prev =>
+      prev === ModeEnum.CHAT
+        ? ModeEnum.COMPLETION
+        : ModeEnum.CHAT,
+    )
+  }, [])
 
   const handleModelChange = useCallback((model: string) => {
     setSelectedModel(model)
@@ -148,21 +149,18 @@ function App() {
     <Theme>
       <Skeleton>
         <Box p="6" style={containerStyle}>
-          <Heading size="8" mb="4">
-            AI Interaction
+          <Heading
+            size="6"
+            mb="2"
+            onClick={handleSwitchMode}
+          >
+            <Text highContrast>
+              {mode.charAt(0).toUpperCase() + mode.slice(1)}
+            </Text>
+            <Text> with AI</Text>
           </Heading>
 
-          <Tabs.Root
-            value={mode}
-            onValueChange={handleModeChange}
-          >
-            <Tabs.List>
-              <Tabs.Trigger value="chat">Chat</Tabs.Trigger>
-              <Tabs.Trigger value="completion">
-                Completion
-              </Tabs.Trigger>
-            </Tabs.List>
-
+          <Tabs.Root value={mode}>
             <Tabs.Content value="chat">
               <Flex direction="column" gap="4">
                 <ModelSelector
